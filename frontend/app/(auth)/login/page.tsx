@@ -92,7 +92,7 @@ export default function LoginPage() {
           <div style={{ fontSize:14, color:"#555" }}>Raqam to'g'rimi?</div>
           <div style={{ fontSize:14, color:"#555", marginTop:6 }}>Kod yuborish usulini tanlang:</div>
         </div>
-        {[{m:"telegram" as const, label:"Telegram orqali (tavsiya etiladi)"},{m:"sms" as const, label:"SMS orqali"}].map(({m,label})=>(
+        {[{m:"sms" as const, label:"SMS orqali"}].map(({m,label})=>(
           <button key={m} onClick={()=>sendOtp(m)} disabled={loading}
             style={{ width:"100%", padding:"16px", background:"#fff", border:"1px solid #E5E5EA", borderRadius:14, fontSize:16, fontWeight:600, color:"#007AFF", cursor:"pointer", marginBottom:8 }}>
             {loading && method===m ? "Yuborilmoqda..." : label}
