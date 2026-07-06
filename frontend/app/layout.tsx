@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { Sidebar } from "@/components/BottomNav";
+import AppShell from "@/components/AppShell";
 
 export const metadata: Metadata = {
   title: "DomGo",
@@ -23,12 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
       </head>
       <body>
-        <div className="app-layout">
-          <Sidebar />
-          <main className="main-content">
-            {children}
-          </main>
-        </div>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

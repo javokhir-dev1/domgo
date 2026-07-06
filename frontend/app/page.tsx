@@ -61,7 +61,8 @@ export default function HomePage(){
 
   useEffect(()=>{
     const u=getUser();
-    if(u)setUser(u); // Guest ham e'lonlarni ko'ra oladi — login majburiy emas
+    if(!u){router.push("/login");return;}
+    setUser(u);
     // Fon rejimda geolokatsiya olishga harakat
     getUserLocation().catch(()=>{});
     fetchListings();
@@ -126,10 +127,7 @@ export default function HomePage(){
             <div style={{width:34,height:34,background:"#4d7378",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center"}}><Home size={20} color="#fff"/></div>
             <span style={{fontSize:20,fontWeight:900,letterSpacing:-0.5}}>DomGo</span>
           </div>
-          <div style={{display:"flex",gap:8,alignItems:"center"}}>
-            {!user&&(
-              <Link href="/login" style={{padding:"8px 14px",background:"#000",color:"#fff",borderRadius:20,fontSize:13,fontWeight:700,textDecoration:"none"}}>Kirish</Link>
-            )}
+          <div style={{display:"flex",gap:8}}>
             <Link href="/top10" style={{width:36,height:36,background:"#000",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",textDecoration:"none"}}>
               <span style={{fontSize:9,fontWeight:900,color:"#4d7378",lineHeight:1.1,textAlign:"center"}}>TOP{"\n"}10</span>
             </Link>
