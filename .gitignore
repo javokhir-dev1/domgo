@@ -1,0 +1,63 @@
+# ── Node / Next.js (frontend) ──
+node_modules/
+.next/
+out/
+build/
+dist/
+.vercel/
+.netlify/
+*.tsbuildinfo
+next-env.d.ts
+
+# ── Python (backend) ──
+venv/
+.venv/
+env/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ── Env / maxfiy fayllar ──
+.env
+.env.*
+!.env.example
+!.env.local.example
+
+# ── Ma'lumotlar bazasi (SQLite) ──
+*.db
+*.sqlite
+*.sqlite3
+backend/domgo.db
+
+# ── Foydalanuvchi yuklagan fayllar ──
+backend/uploads/
+uploads/
+
+# ── Loglar ──
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ── OS ──
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── IDE / muharrirlar ──
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── Docker ──
+# docker volume ma'lumotlari (agar lokal saqlansa)
+pgdata/
+
+# ── Vaqtinchalik / keraksiz ──
+*.tmp
+_big.txt
+_synctest.txt
