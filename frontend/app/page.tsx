@@ -156,8 +156,8 @@ export default function HomePage(){
 
       {/* Map view */}
       {view==="map"&&(
-        <div style={{height:"calc(100vh - 130px)",position:"relative"}}>
-          <MapComponent listings={filtered} center={userPos||[41.2995,69.2401]} zoom={userPos?13:11} cur={cur} onSelect={(lid)=>router.push(`/listing/${lid}`)}/>
+        <div style={{height:"calc(100vh - 200px)",position:"relative",overflow:"hidden",touchAction:"none",overscrollBehavior:"none"}}>
+          <MapComponent listings={filtered} center={userPos||[41.2995,69.2401]} zoom={userPos?13:11} cur={cur} userLoc={userPos} onSelect={(lid)=>router.push(`/listing/${lid}`)}/>
 
           {/* Deal type buttons - top */}
           <div style={{position:"absolute",top:10,left:10,right:10,display:"flex",gap:6,zIndex:500}}>
@@ -170,7 +170,7 @@ export default function HomePage(){
 
           {/* Geo error xabar */}
           {geoError&&(
-            <div style={{position:"absolute",bottom:80,left:16,right:16,background:"#FF3B30",color:"#fff",borderRadius:12,padding:"10px 14px",fontSize:13,fontWeight:600,zIndex:600,textAlign:"center",boxShadow:"0 4px 16px rgba(255,59,48,.4)"}}>
+            <div style={{position:"absolute",bottom:70,left:16,right:16,background:"#FF3B30",color:"#fff",borderRadius:12,padding:"10px 14px",fontSize:13,fontWeight:600,zIndex:600,textAlign:"center",boxShadow:"0 4px 16px rgba(255,59,48,.4)"}}>
               📍 {geoError}
             </div>
           )}
@@ -180,7 +180,7 @@ export default function HomePage(){
             onClick={handleNearMe}
             disabled={nearLoading}
             style={{
-              position:"absolute",bottom:20,right:16,
+              position:"absolute",bottom:16,right:16,
               background:nearLoading?"#555":"#000",
               color:"#fff",border:"none",borderRadius:50,
               padding:"12px 20px",fontWeight:700,fontSize:14,
@@ -199,7 +199,7 @@ export default function HomePage(){
 
           {/* Joylashuvim belgisi */}
           {userPos&&(
-            <div style={{position:"absolute",bottom:20,left:16,background:"#4d7378",borderRadius:50,padding:"10px 16px",fontWeight:700,fontSize:13,color:"#fff",zIndex:600,boxShadow:"0 2px 8px rgba(0,0,0,.2)"}}>
+            <div style={{position:"absolute",top:54,left:10,background:"#4d7378",borderRadius:50,padding:"7px 13px",fontWeight:700,fontSize:12,color:"#fff",zIndex:600,boxShadow:"0 2px 8px rgba(0,0,0,.2)"}}>
               📍 Joylashuvim aniqlandi
             </div>
           )}

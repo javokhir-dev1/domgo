@@ -144,8 +144,6 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); min-
 .ymk-pop span { display: block; font-size: 11px; color: #555; margin-top: 2px; }
 .ymk-more { margin-top: 6px; font-size: 12px; font-weight: 700; color: #4d7378; }
 .ympin { width: 24px; height: 24px; border-radius: 50% 50% 50% 0; background: #e53935; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,.35); transform: translate(-50%, -100%) rotate(-45deg); }
-.img-slot { width: 100%; aspect-ratio: 1; background: #F2F2F7; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1.5px dashed #C7C7CC; }
-.breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
-.breadcrumb span { color: var(--text); font-weight: 600; }
-@keyframes spin { to { transform: rotate(360deg) } }
-.spin { animation: spin 1s linear infinite; }
+/* Foydalanuvchi joylashuvi — pulslovchi ko'k nuqta */
+.ymgeo { width: 16px; height: 16px; border-radius: 50%; background: #1a73e8; border: 3px solid #fff; box-shadow: 0 0 0 0 rgba(26,115,232,.5); transform: translate(-50%, -50%); animation: ymgeopulse 1.8s ease-out infinite; }
+@keyframes ymgeopulse { 0% { box-shadow: 0 0 0 0 rgba(26,115,232,.5) } 70% { box-shadow: 0 0 0 16px rgba(26,115,232,0) } 100% { box-shadow: 0 0 0 0 rgba(26,115,232,0) } }

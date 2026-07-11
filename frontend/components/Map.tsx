@@ -12,9 +12,25 @@ type Props = {
   onPick?: (lat: number, lng: number) => void;
   picked?: { lat: number; lng: number } | null;
   onSelect?: (id: number) => void;
+  userLoc?: [number, number] | null; // [lat, lng] — foydalanuvchi joylashuvi
 };
 
-export default function MapComponent({ listings, center, zoom = 11, cur = "ye", pickerMode, onPick, picked, onSelect }: Props) {
+// "Открыть в Яндекс Картах" tugmasini yashiradi (majburiy © logotip qoladi)
+function hideOpenMapsButton(root: HTMLElement) {
+  const kill = () => {
+    root.querySelectorAll("a, button").forEach((n) => {
+      const t = (n.textContent || "").toLowerCase();
+      if (t.includes("открыть") || t.includes("open") || t.includes("yandex maps")) {
+        (n as HTMLElement).style.display = "none";
+      }
+    });
+  };
+  kill();
+  setTimeout(kill, 400);
+  setTimeout(kill, 1200);
+}
+
+export default function MapComponent({ listings, center, zoom = 11, cur = "ye", pickerMode, onPick, picked, onSelect, userLoc }: Props) {
   const elRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
 
@@ -27,7 +43,6 @@ export default function MapComponent({ listings, center, zoom = 11, cur = "ye", 
         if (cancelled || !elRef.current) return;
         const { YMap, YMapDefaultSchemeLayer, YMapDefaultFeaturesLayer, YMapMarker, YMapListener } = ymaps3;
 
-        // Avvalgi map (yoki hot-reload qoldig'i) bo'lsa tozalaymiz
         if (mapRef.current) { mapRef.current.destroy(); mapRef.current = null; }
         elRef.current.innerHTML = "";
 
@@ -38,8 +53,15 @@ export default function MapComponent({ listings, center, zoom = 11, cur = "ye", 
         mapRef.current = map;
         map.addChild(new YMapDefaultSchemeLayer());
         map.addChild(new YMapDefaultFeaturesLayer());
+        if (elRef.current) hideOpenMapsButton(elRef.current);
 
-        // Narx markerlari
+        // Foydalanuvchi joylashuvi — ko'k nuqta
+        if (userLoc && userLoc[0] && userLoc[1]) {
+          const dot = document.createElement("div");
+          dot.className = "ymgeo";
+          map.addChild(new YMapMarker({ coordinates: [userLoc[1], userLoc[0]], zIndex: 900 }, dot));
+        }
+
         listings.forEach((l) => {
           if (!l.lat || !l.lng) return;
           const wrap = document.createElement("div");
@@ -67,7 +89,6 @@ export default function MapComponent({ listings, center, zoom = 11, cur = "ye", 
           map.addChild(new YMapMarker({ coordinates: [l.lng, l.lat] }, wrap));
         });
 
-        // Joy tanlash (picker) rejimi
         if (pickerMode && onPick) {
           const pin = document.createElement("div");
           pin.className = "ympin";
@@ -98,7 +119,7 @@ export default function MapComponent({ listings, center, zoom = 11, cur = "ye", 
       cancelled = true;
       if (mapRef.current) { mapRef.current.destroy(); mapRef.current = null; }
     };
-  }, [listings.length, center?.[0], center?.[1], zoom]);
+  }, [listings.length, center?.[0], center?.[1], zoom, userLoc?.[0], userLoc?.[1]]);
 
-  return <div ref={elRef} style={{ width: "100%", height: "100%" }} />;
+  return <div ref={elRef} style={{ width: "100%", height: "100%", touchAction: "none", overscrollBehavior: "none" }} />;
 }
