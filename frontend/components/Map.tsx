@@ -1,55 +1,104 @@
 "use client";
 import { useEffect, useRef } from "react";
 import { type Listing, getImg, fmt } from "@/lib/api";
+import { loadYmaps } from "@/lib/ymaps";
 
-let cnt = 0;
+type Props = {
+  listings: Listing[];
+  center?: [number, number];        // [lat, lng]
+  zoom?: number;
+  cur?: "ye" | "som";
+  pickerMode?: boolean;
+  onPick?: (lat: number, lng: number) => void;
+  picked?: { lat: number; lng: number } | null;
+  onSelect?: (id: number) => void;
+};
 
-export default function MapComponent({ listings, center, zoom = 11, cur = "ye", pickerMode, onPick, picked, onSelect }: { listings: Listing[]; center?: [number, number]; zoom?: number; cur?: "ye" | "som"; pickerMode?: boolean; onPick?: (lat: number, lng: number) => void; picked?: { lat: number, lng: number } | null; onSelect?: (id: number) => void }) {
+export default function MapComponent({ listings, center, zoom = 11, cur = "ye", pickerMode, onPick, picked, onSelect }: Props) {
+  const elRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
-  const id = useRef(`jmap${++cnt}`);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     let cancelled = false;
 
-    import("leaflet").then(L => {
-      if (cancelled) return;
-      const el = document.getElementById(id.current);
-      if (!el) return; // konteyner hali/hozir DOM'da yo'q
+    loadYmaps()
+      .then((ymaps3) => {
+        if (cancelled || !elRef.current) return;
+        const { YMap, YMapDefaultSchemeLayer, YMapDefaultFeaturesLayer, YMapMarker, YMapListener } = ymaps3;
 
-      // Avvalgi map (yoki hot-reload qoldig'i) bo'lsa tozalaymiz
-      if (mapRef.current) { mapRef.current.remove(); mapRef.current = null; }
-      if ((el as any)._leaflet_id) { (el as any)._leaflet_id = null; }
+        // Avvalgi map (yoki hot-reload qoldig'i) bo'lsa tozalaymiz
+        if (mapRef.current) { mapRef.current.destroy(); mapRef.current = null; }
+        elRef.current.innerHTML = "";
 
-      delete (L.Icon.Default.prototype as any)._getIconUrl;
-      L.Icon.Default.mergeOptions({ iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png", iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png", shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png" });
+        // Yandex [lng, lat] tartibida ishlaydi — bizning DB esa [lat, lng]
+        const c: [number, number] = center ? [center[1], center[0]] : [69.2401, 41.2995];
 
-      const c: [number, number] = center || [41.2995, 69.2401];
-      const map = L.map(el).setView(c, zoom);
-      mapRef.current = map;
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OSM" }).addTo(map);
-      setTimeout(() => { if (mapRef.current) mapRef.current.invalidateSize(); }, 120);
+        const map = new YMap(elRef.current, { location: { center: c, zoom } });
+        mapRef.current = map;
+        map.addChild(new YMapDefaultSchemeLayer());
+        map.addChild(new YMapDefaultFeaturesLayer());
 
-      listings.forEach(l => {
-        if (!l.lat || !l.lng) return;
-        const icon = L.divIcon({ html: `<div class="map-price">${fmt(l.price, cur)}</div>`, className: "", iconAnchor: [40, 32] });
-        const m = L.marker([l.lat, l.lng], { icon }).addTo(map);
-        const cover = l.images[0];
-        m.bindPopup(`<div id="pp-${l.id}" style="min-width:160px;font-family:Inter,sans-serif;cursor:pointer">${cover ? `<img src="${getImg(cover.file_path)}" style="width:100%;height:80px;object-fit:cover;border-radius:8px;margin-bottom:6px"/>` : ""}<b>${fmt(l.price, cur)}</b><br/><span style="font-size:11px;color:#555">${l.title}</span><div style="margin-top:6px;font-size:12px;font-weight:700;color:#4d7378">Batafsil →</div></div>`);
-        if (onSelect) {
-          m.on("popupopen", () => { const e = document.getElementById(`pp-${l.id}`); if (e) e.onclick = () => onSelect(l.id); });
+        // Narx markerlari
+        listings.forEach((l) => {
+          if (!l.lat || !l.lng) return;
+          const wrap = document.createElement("div");
+          wrap.className = "ymk";
+          const cover = l.images[0];
+          wrap.innerHTML =
+            `<div class="map-price">${fmt(l.price, cur)}</div>` +
+            `<div class="ymk-pop" style="display:none">` +
+              (cover ? `<img src="${getImg(cover.file_path)}" alt=""/>` : "") +
+              `<b>${fmt(l.price, cur)}</b>` +
+              `<span>${l.title}</span>` +
+              `<div class="ymk-more">Batafsil →</div>` +
+            `</div>`;
+
+          const bubble = wrap.querySelector(".map-price") as HTMLElement;
+          const pop = wrap.querySelector(".ymk-pop") as HTMLElement;
+          bubble.onclick = (e) => {
+            e.stopPropagation();
+            const open = pop.style.display === "none";
+            pop.style.display = open ? "block" : "none";
+            wrap.style.zIndex = open ? "1000" : "";
+          };
+          if (onSelect) pop.onclick = (e) => { e.stopPropagation(); onSelect(l.id); };
+
+          map.addChild(new YMapMarker({ coordinates: [l.lng, l.lat] }, wrap));
+        });
+
+        // Joy tanlash (picker) rejimi
+        if (pickerMode && onPick) {
+          const pin = document.createElement("div");
+          pin.className = "ympin";
+          const marker = new YMapMarker(
+            { coordinates: picked ? [picked.lng, picked.lat] : c },
+            pin
+          );
+          let added = false;
+          if (picked) { map.addChild(marker); added = true; }
+
+          const listener = new YMapListener({
+            layer: "any",
+            onClick: (_obj: any, ev: any) => {
+              const coords = ev?.coordinates;
+              if (!coords) return;
+              const [lng, lat] = coords;
+              marker.update({ coordinates: [lng, lat] });
+              if (!added) { map.addChild(marker); added = true; }
+              onPick(lat, lng);
+            },
+          });
+          map.addChild(listener);
         }
-      });
+      })
+      .catch((e) => console.error("Yandex Maps:", e));
 
-      if (pickerMode && onPick) {
-        let pin: any = null;
-        if (picked) pin = L.marker([picked.lat, picked.lng]).addTo(map);
-        map.on("click", (e: any) => { if (pin) pin.remove(); pin = L.marker([e.latlng.lat, e.latlng.lng]).addTo(map); onPick(e.latlng.lat, e.latlng.lng); });
-      }
-    });
-
-    return () => { cancelled = true; if (mapRef.current) { mapRef.current.remove(); mapRef.current = null; } };
+    return () => {
+      cancelled = true;
+      if (mapRef.current) { mapRef.current.destroy(); mapRef.current = null; }
+    };
   }, [listings.length, center?.[0], center?.[1], zoom]);
 
-  return <div id={id.current} style={{ width: "100%", height: "100%" }} />;
+  return <div ref={elRef} style={{ width: "100%", height: "100%" }} />;
 }
