@@ -170,7 +170,7 @@ export default function HomePage(){
 
           {/* Geo error xabar */}
           {geoError&&(
-            <div style={{position:"absolute",bottom:70,left:16,right:16,background:"#FF3B30",color:"#fff",borderRadius:12,padding:"10px 14px",fontSize:13,fontWeight:600,zIndex:600,textAlign:"center",boxShadow:"0 4px 16px rgba(255,59,48,.4)"}}>
+            <div style={{position:"fixed",bottom:128,left:16,right:16,background:"#FF3B30",color:"#fff",borderRadius:12,padding:"10px 14px",fontSize:13,fontWeight:600,zIndex:600,textAlign:"center",boxShadow:"0 4px 16px rgba(255,59,48,.4)"}}>
               📍 {geoError}
             </div>
           )}
@@ -180,7 +180,7 @@ export default function HomePage(){
             onClick={handleNearMe}
             disabled={nearLoading}
             style={{
-              position:"absolute",bottom:16,right:16,
+              position:"fixed",bottom:72,right:16,
               background:nearLoading?"#555":"#000",
               color:"#fff",border:"none",borderRadius:50,
               padding:"12px 20px",fontWeight:700,fontSize:14,
@@ -197,12 +197,6 @@ export default function HomePage(){
             }
           </button>
 
-          {/* Joylashuvim belgisi */}
-          {userPos&&(
-            <div style={{position:"absolute",top:54,left:10,background:"#4d7378",borderRadius:50,padding:"7px 13px",fontWeight:700,fontSize:12,color:"#fff",zIndex:600,boxShadow:"0 2px 8px rgba(0,0,0,.2)"}}>
-              📍 Joylashuvim aniqlandi
-            </div>
-          )}
         </div>
       )}
 
