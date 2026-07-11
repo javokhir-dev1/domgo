@@ -32,6 +32,8 @@ export default function HomePage(){
   const[userPos,setUserPos]=useState<[number,number]|null>(null);
   const[nearLoading,setNearLoading]=useState(false);
   const[geoError,setGeoError]=useState("");
+  const[mapZoom,setMapZoom]=useState<number|null>(null);
+  const[recenter,setRecenter]=useState(0);
   const nearModeRef=useRef(false);
 
   // Geolokatsiya olish funksiyasi
@@ -86,29 +88,24 @@ export default function HomePage(){
     fetchListings(params);
   },[deal,filterCat,filterRegion]);
 
-  // "Menga yaqin" tugmasi bosilganda
+  // "Menga yaqin" — xaritani men turgan joyga markazlash (e'lon bo'lmasa ham)
   const handleNearMe=useCallback(async()=>{
     setGeoError("");
     setNearLoading(true);
     try{
-      // Geolokatsiyani qayta olish (foydalanuvchi ruxsat bermagangi bo'lishi mumkin)
       let pos=userPos;
       if(!pos){
         pos=await getUserLocation();
       }
-      nearModeRef.current=true;
-      const{data}=await api.get("/api/listings/near",{
-        params:{lat:pos[0],lng:pos[1],radius_km:50,deal_type:deal}
-      });
-      setListings(data);
+      setMapZoom(15);
+      setRecenter(c=>c+1);
     }catch(err:any){
       setGeoError(err.message||"Joylashuvni aniqlashda xato");
-      nearModeRef.current=false;
       setTimeout(()=>setGeoError(""),4000);
     }finally{
       setNearLoading(false);
     }
-  },[userPos,deal,getUserLocation]);
+  },[userPos,getUserLocation]);
 
   const filtered=listings.filter(l=>!search||(
     l.title.toLowerCase().includes(search.toLowerCase())||
@@ -157,7 +154,7 @@ export default function HomePage(){
       {/* Map view */}
       {view==="map"&&(
         <div style={{height:"calc(100vh - 200px)",position:"relative",overflow:"hidden",touchAction:"none",overscrollBehavior:"none"}}>
-          <MapComponent listings={filtered} center={userPos||[41.2995,69.2401]} zoom={userPos?13:11} cur={cur} userLoc={userPos} onSelect={(lid)=>router.push(`/listing/${lid}`)}/>
+          <MapComponent listings={filtered} center={userPos||[41.2995,69.2401]} zoom={mapZoom??(userPos?13:11)} cur={cur} userLoc={userPos} recenter={recenter} onSelect={(lid)=>router.push(`/listing/${lid}`)}/>
 
           {/* Deal type buttons - top */}
           <div style={{position:"absolute",top:10,left:10,right:10,display:"flex",gap:6,zIndex:500}}>

@@ -13,6 +13,7 @@ type Props = {
   picked?: { lat: number; lng: number } | null;
   onSelect?: (id: number) => void;
   userLoc?: [number, number] | null; // [lat, lng] — foydalanuvchi joylashuvi
+  recenter?: number;                 // qiymati o'zgarsa — xarita qayta markazlanadi
 };
 
 // "Открыть в Яндекс Картах" tugmasini yashiradi (majburiy © logotip qoladi)
@@ -30,7 +31,7 @@ function hideOpenMapsButton(root: HTMLElement) {
   setTimeout(kill, 1200);
 }
 
-export default function MapComponent({ listings, center, zoom = 11, cur = "ye", pickerMode, onPick, picked, onSelect, userLoc }: Props) {
+export default function MapComponent({ listings, center, zoom = 11, cur = "ye", pickerMode, onPick, picked, onSelect, userLoc, recenter }: Props) {
   const elRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
 
@@ -119,7 +120,7 @@ export default function MapComponent({ listings, center, zoom = 11, cur = "ye", 
       cancelled = true;
       if (mapRef.current) { mapRef.current.destroy(); mapRef.current = null; }
     };
-  }, [listings.length, center?.[0], center?.[1], zoom, userLoc?.[0], userLoc?.[1]]);
+  }, [listings.length, center?.[0], center?.[1], zoom, userLoc?.[0], userLoc?.[1], recenter]);
 
   return <div ref={elRef} style={{ width: "100%", height: "100%", touchAction: "none", overscrollBehavior: "none" }} />;
 }
